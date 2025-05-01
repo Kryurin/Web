@@ -2,31 +2,44 @@
 session_start();
 require 'db.php';
 
+// Get role from GET (first load) or POST (after form submit)
+$role = '';
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $role = htmlspecialchars($_POST['role'] ?? '');
+} else {
+    $role = htmlspecialchars($_GET['role'] ?? '');
+}
+
+$validRoles = ['freelancer', 'commissioner'];
+
+if (!in_array($role, $validRoles)) {
+    die("Invalid role. <a href='index.php'>Go back</a>");
+}
+
+// Handle login submission
+$error = '';
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = htmlspecialchars(trim($_POST["username"]));
     $password = $_POST["password"];
 
-    // Check if the user exists
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? AND role = ?");
+    $stmt->bind_param("ss", $username, $role);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-        
-        // Verify password
+    if ($user = $result->fetch_assoc()) {
         if (password_verify($password, $user['password'])) {
-            // Store session data
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            header('Location: homepage.php');
+            $_SESSION['role'] = $user['role'];
+            header("Location: homepage.php");
             exit;
         } else {
-            echo "Invalid password. <a href='login.php'>Try again</a>";
+            $error = "Incorrect password.";
         }
     } else {
-        echo "No such user found. <a href='login.php'>Try again</a>";
+        $error = "User not found.";
     }
 
     $stmt->close();
@@ -38,11 +51,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title><?php echo ucfirst($role); ?> Login</title>
 </head>
 <body>
-    <h2>Login</h2>
-    <form action="login.php" method="POST">
+    <h2><?php echo ucfirst($role); ?> Login</h2>
+
+    <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
+
+    <form method="post">
+        <input type="hidden" name="role" value="<?php echo $role; ?>">
+
         <label>Username:</label><br>
         <input type="text" name="username" required><br><br>
 
@@ -52,6 +70,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <input type="submit" value="Login">
     </form>
 
-    <p>Don't have an account? <a href="signup.php">Sign up</a></p>
+    <p>Don't have an account? 
+        <a href="signup.php?role=<?php echo $role; ?>">
+            Sign up as a <?php echo $role; ?>
+        </a>
+    </p>
 </body>
 </html>
