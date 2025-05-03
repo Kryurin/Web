@@ -55,7 +55,8 @@ if (isset($_SESSION['user_id'])) {
 </form>
 
 <!-- Admin -->
-<form action="admin_login.php" method="get" style="display:inline;">
+<form action="login.php" method="get" style="display:inline;">
+    <input type="hidden" name="role" value="admin">
     <button class="login-button admin" type="submit">Admin</button>
 </form>
 

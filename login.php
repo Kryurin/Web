@@ -2,7 +2,6 @@
 session_start();
 require 'db.php';
 
-// Get role from GET (first load) or POST (after form submit)
 $role = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -11,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $role = htmlspecialchars($_GET['role'] ?? '');
 }
 
-$validRoles = ['freelancer', 'commissioner'];
+$validRoles = ['freelancer', 'commissioner', 'admin'];
 
 if (!in_array($role, $validRoles)) {
     die("Invalid role. <a href='index.php'>Go back</a>");
@@ -33,7 +32,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
-            header("Location: homepage.php");
+
+            // Redirect based on role
+            if ($user['role'] === 'admin') {
+                header("Location: admindash.php");
+            } elseif ($user['role'] === 'freelancer') {
+                header("Location: flhome.php");
+            } elseif ($user['role'] === 'commissioner') {
+                header("Location: chome.php");
+            }
             exit;
         } else {
             $error = "Incorrect password.";
