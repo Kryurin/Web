@@ -1,0 +1,86 @@
+body {
+    margin: 0;
+    background-color: #0b0c10;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.signup-container {
+    background-color: #0b0c10;
+    padding: 40px;
+    border: 1px solid #66fcf1;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.header {
+    color: #66fcf1;
+    font-size: 32px;
+    margin: 0 0 10px;
+}
+
+.description {
+    color: #cccccc;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    color: #66fcf1;
+    font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #66fcf1;
+    background-color: #1a1a1a;
+    color: #fff;
+    box-sizing: border-box;
+}
+
+form input::placeholder {
+    color: #888;
+}
+
+button {
+    background-color: #66fcf1;
+    color: #000;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.login-text {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #cccccc;
+}
+
+.login-text a {
+    color: #66fcf1;
+    text-decoration: none;
+}
+
+.login-text a:hover {
+    text-decoration: underline;
+}
