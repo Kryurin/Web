@@ -1,10 +1,17 @@
 <?php
 session_start();
+require 'db.php';
 
+if(isset($_SESSION['role'])){
 // If user is logged in, redirect to the homepage
-if (isset($_SESSION['user_id'])) {
-    header('Location: homepage.php');
-    exit;
+if (isset($_SESSION['user_id']) || $_SESSION['role'] == 'freelancer') {
+    header("Location: flhome.php");
+    exit();
+}
+elseif (isset($_SESSION['user_id']) || $_SESSION['role'] == 'commissioner') {
+    header("Location: chome.php");
+    exit();
+}
 }
 ?>
 

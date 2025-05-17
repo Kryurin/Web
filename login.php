@@ -22,13 +22,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = htmlspecialchars(trim($_POST["username"]));
     $password = $_POST["password"];
 
+    // Fetch user by username and role
     $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? AND role = ?");
     $stmt->bind_param("ss", $username, $role);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($user = $result->fetch_assoc()) {
-        if (password_verify($password, $user['password'])) {
+        if ($user['status'] === 'inactive') {
+            $error = "Your account is deactivated. Please contact support.";
+        } elseif (password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
@@ -54,6 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,10 +73,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <input type="hidden" name="role" value="<?php echo $role; ?>">
 
         <label>Username:</label><br>
-        <input type="text" name="username" required><br><br>
+        <input type="text" name="username" placeholder = 'username' required><br><br>
 
         <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
+        <input type="password" name="password" placeholder = 'password' required><br><br>
+
 
         <input type="submit" value="Login">
     </form>

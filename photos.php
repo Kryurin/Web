@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && !empty($_FILES['photos'])) {
 // fetch latest 3
 $stmt=$conn->prepare(
   "SELECT file_path FROM freelancer_photos 
-   WHERE user_id=? ORDER BY uploaded_at DESC LIMIT 3"
+   WHERE user_id=? ORDER BY uploaded_at DESC LIMIT 5"
 );
 $stmt->bind_param("i",$user_id);
 $stmt->execute();

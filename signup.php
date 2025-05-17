@@ -12,6 +12,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = htmlspecialchars(trim($_POST["username"]));
     $email = htmlspecialchars(trim($_POST["email"]));
     $password = password_hash($_POST["password"], PASSWORD_DEFAULT);
+    $cpassword = $_POST['cpassword'];
+
+    if ($password !== $cpassword) {
+        echo("Passwords do not match. <a href='signup.php?role=$role'>Go back</a>");
+    }
 
     // Check if user exists
     $check = $conn->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
@@ -25,7 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt = $conn->prepare("INSERT INTO users (username, email, role, password) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $username, $email, $role, $password);
         if ($stmt->execute()) {
-            echo "Registration successful. <a href='login.php?role=$role'>Go to login</a>";
+            header("Location: login.php?role=" . urlencode($role));
+            exit;
         } else {
             echo "Error: " . $stmt->error;
         }
@@ -51,10 +57,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <input type="text" name="username" required><br><br>
 
         <label>Email:</label><br>
-        <input type="email" name="email" required><br><br>
+        <input type="email" id="email" name="email" pattern="^[a-zA-Z0-9]+@wvsu\.edu\.ph$" required placeholder="email@wvsu.edu.ph"><br><br>
 
         <label>Password:</label><br>
         <input type="password" name="password" required><br><br>
+
+        <label>Confirm Password:</label><br>
+        <input type="password" name="cpassword" required><br><br>
 
         <input type="submit" value="Sign Up">
     </form>
@@ -62,3 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <p>Already have an account? <a href="login.php?role=<?php echo $role; ?>">Log in</a></p>
 </body>
 </html>
+
+
+
+

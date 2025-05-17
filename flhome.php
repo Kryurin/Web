@@ -14,7 +14,6 @@ $stmt = $conn->prepare("SELECT * FROM freelancer_profiles WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
-
 if ($result->num_rows === 0) {
     header("Location: flprofile.php");
     exit;
@@ -65,7 +64,17 @@ $conn->close();
         }
         nav .right a:hover { text-decoration: underline; }
         .container { padding: 20px; }
-        .welcome { font-size: 22px; margin-bottom: 20px; }
+        .welcome { font-size: 22px; margin-bottom: 10px; }
+        .btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 16px;
+            background: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .btn:hover { background: #0069d9; }
         .feed {
             background: white;
             border-radius: 8px;
@@ -103,6 +112,7 @@ $conn->close();
     <div class="right">
         <a href="flhome.php">Home</a>
         <a href="search.php">Search</a>
+        <a href="my_commissions.php">My Commissions</a>
         <a href="flprofile2.php">Profile</a>
         <a href="logout.php">Logout</a>
     </div>
@@ -112,6 +122,9 @@ $conn->close();
     <div class="welcome">
         Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!
     </div>
+
+    <!-- New button to view taken commissions -->
+    <a href="my_commissions.php" class="btn">View My Commissions</a>
 
     <div class="feed">
         <h3>Admin Announcements</h3>
@@ -134,9 +147,7 @@ $conn->close();
 
                     <?php if (!empty($announce['image_path'])): ?>
                         <img 
-                          src="uploads/<?php 
-                            echo htmlspecialchars($announce['image_path']); 
-                          ?>" 
+                          src="uploads/<?php echo htmlspecialchars($announce['image_path']); ?>" 
                           alt="Announcement Image"
                         >
                     <?php endif; ?>

@@ -27,6 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $bio = $_POST['bio'];
     $skills = $_POST['skills'];
     $location = $_POST['location'];
+    $fname = $_POST['fname'];
+    $lname = $_POST['lname'];
 
     // Handle profile picture upload
     if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
@@ -37,10 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Insert freelancer profile data into the database
-    $insert_query = "INSERT INTO freelancer_profiles (user_id, profile_picture, bio, skills, location) 
-                     VALUES (?, ?, ?, ?, ?)";
+    $insert_query = "INSERT INTO freelancer_profiles (user_id, profile_picture, bio, skills, location, fname, lname) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($insert_query);
-    $stmt->bind_param("issss", $user_id, $profile_picture, $bio, $skills, $location);
+    $stmt->bind_param("issssss", $user_id, $profile_picture, $bio, $skills, $location, $fname, $lname);
     if ($stmt->execute()) {
         // Redirect to the freelancer home page after successful profile creation
         header("Location: flhome.php");
@@ -113,6 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="form-group">
                 <label for="profile_picture">Profile Picture:</label>
                 <input type="file" name="profile_picture" id="profile_picture" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label for="First Name">First Name</label>
+                <input type="text" name="fname" id="fname">
+            </div>
+
+            <div class="form-group">
+                <label for="lname">Last Name</label>
+                <input type="text" name="lname" id="lname">
             </div>
 
             <div class="form-group">

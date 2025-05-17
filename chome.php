@@ -9,16 +9,38 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'commissioner') {
 
 $user_id = $_SESSION['user_id'];
 
-// (Optional) If commissioners have profiles, you can check here, e.g.:
-// $stmt = $conn->prepare("SELECT * FROM commissioner_profiles WHERE user_id = ?");
-// … same pattern as freelancer_profiles …
+// 1) Fetch notifications for this commissioner
+$notifications = [];
+$stmt = $conn->prepare("
+    SELECT id, message, is_read, created_at
+    FROM notifications
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+");
+$stmt->bind_param('i', $user_id);
+$stmt->execute();
+$res = $stmt->get_result();
+while ($row = $res->fetch_assoc()) {
+    $notifications[] = $row;
+}
+$stmt->close();
 
-// Get admin announcements (including image_path)
+// 2) Mark all as read (so next page load they appear as read)
+$stmt = $conn->prepare("
+    UPDATE notifications
+    SET is_read = 1
+    WHERE user_id = ? AND is_read = 0
+");
+$stmt->bind_param('i', $user_id);
+$stmt->execute();
+$stmt->close();
+
+// 3) Get admin announcements (including image_path)
 $announcements = [];
 $sql = "
     SELECT title, message, created_at, image_path
-      FROM announcements
-  ORDER BY created_at DESC
+    FROM announcements
+    ORDER BY created_at DESC
 ";
 if ($result = $conn->query($sql)) {
     while ($row = $result->fetch_assoc()) {
@@ -26,6 +48,7 @@ if ($result = $conn->query($sql)) {
     }
     $result->free();
 }
+
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -79,6 +102,36 @@ $conn->close();
             font-size: 22px;
             margin-bottom: 20px;
         }
+
+        /* Notifications */
+        .notifications {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .notifications h3 {
+            margin-top: 0;
+        }
+        .notification-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        .notification-item.unread .message {
+            font-weight: bold;
+        }
+        .notification-item .timestamp {
+            display: block;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 4px;
+        }
+
+        /* Announcements */
         .feed {
             background: white;
             border-radius: 8px;
@@ -115,7 +168,8 @@ $conn->close();
     <div class="left">Commissioner Dashboard</div>
     <div class="right">
         <a href="chome.php">Home</a>
-        <a href="search.php">Search</a>
+        <a href="search_freelancers.php">Search</a>
+        <a href="mycommissions.php">Commissions</a>
         <a href="logout.php">Logout</a>
     </div>
 </nav>
@@ -129,6 +183,24 @@ $conn->close();
         <a href="postcommission.php" class="btn-post">Post Commission</a>
     </div>
 
+    <!-- Notifications section -->
+    <?php if (!empty($notifications)): ?>
+    <div class="notifications">
+        <h3>Notifications</h3>
+        <?php foreach ($notifications as $note): ?>
+            <div class="notification-item<?php echo $note['is_read'] ? '' : ' unread'; ?>">
+                <div class="message">
+                    <?php echo htmlspecialchars($note['message']); ?>
+                </div>
+                <span class="timestamp">
+                    <?php echo date("F j, Y, g:i a", strtotime($note['created_at'])); ?>
+                </span>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- Admin Announcements -->
     <div class="feed">
         <h3>Admin Announcements</h3>
 
@@ -139,12 +211,7 @@ $conn->close();
                 <div class="announcement">
                     <h4><?php echo htmlspecialchars($a['title']); ?></h4>
                     <small>
-                        <?php 
-                          echo date(
-                            "F j, Y, g:i a",
-                            strtotime($a['created_at'])
-                          );
-                        ?>
+                        <?php echo date("F j, Y, g:i a", strtotime($a['created_at'])); ?>
                     </small>
                     <p><?php echo nl2br(htmlspecialchars($a['message'])); ?></p>
 

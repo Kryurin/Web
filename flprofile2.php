@@ -8,7 +8,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'freelancer') {
 }
 
 $user_id = $_SESSION['user_id'];
-// Fetch freelancer profile
 $stmt = $conn->prepare("SELECT * FROM freelancer_profiles WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -34,6 +33,7 @@ $conn->close();
     .buttons button:hover { background:#0056b3; }
     #dynamic-content { margin-top:30px; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
   </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
@@ -64,75 +64,83 @@ $conn->close();
 
   <div class="buttons">
     <button id="btn-photos">Photos</button>
-    <button onclick="loadContent('ratings')">Ratings</button>
-    <button onclick="loadContent('public_thread')">Public Thread</button>
+    <button id="btn-ratings">Ratings</button>
+    <button id="btn-thread">Public Thread</button>
   </div>
 
   <div id="dynamic-content"></div>
 </div>
 
 <script>
-  const dynamicContent = document.getElementById('dynamic-content');
+const dynamicContent = document.getElementById('dynamic-content');
 
-  function loadContent(name) {
-    const urls = {
-      photos: 'photos.php',
-      ratings: 'ratings.php',
-      public_thread: 'public_thread.php'
-    };
-    const url = urls[name];
-    if (!url) return;
+function loadContent(name) {
+  const urls = {
+    photos: 'photos.php',
+    ratings: 'ratings.php',
+    public_thread: 'public_thread.php'
+  };
+  const url = urls[name];
+  if (!url) return;
 
-    console.log('⌛ Fetching', url);
-    fetch(url)
-      .then(r => {
-        console.log('📥', url, 'status', r.status);
-        return r.text();
-      })
+  console.log('⌛ Fetching', url);
+  fetch(url)
+    .then(r => r.text())
+    .then(html => {
+      dynamicContent.innerHTML = `<div id="public-thread-container">${html}</div>`;
+      if (name === 'photos') initPhotoForm();
+    })
+    .catch(err => {
+      console.error('Error loading', url, err);
+      dynamicContent.innerHTML = "<p style='color:red;'>Failed to load content.</p>";
+    });
+}
+
+document.getElementById('btn-photos').addEventListener('click', () => loadContent('photos'));
+document.getElementById('btn-ratings').addEventListener('click', () => loadContent('ratings'));
+document.getElementById('btn-thread').addEventListener('click', () => loadContent('public_thread'));
+
+function initPhotoForm() {
+  const form = document.getElementById('photo-upload-form');
+  const input = document.getElementById('photos');
+  if (!form || !input) return;
+
+  input.addEventListener('change', () => {
+    if (input.files.length > 3) {
+      alert('You can only select up to 3 photos.');
+      input.value = '';
+    }
+  });
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const fd = new FormData(form);
+    fetch('photos.php', { method: 'POST', body: fd })
+      .then(r => r.text())
       .then(html => {
         dynamicContent.innerHTML = html;
-        if (name === 'photos') initPhotoForm();
+        initPhotoForm();
       })
       .catch(err => {
-        console.error('Error loading', url, err);
-        dynamicContent.innerHTML = "<p style='color:red;'>Failed to load content.</p>";
+        console.error('Upload failed', err);
+        alert('Upload failed.');
       });
-  }
+  });
+}
 
-  document.getElementById('btn-photos').addEventListener('click', () => loadContent('photos'));
-  document.getElementById('btn-ratings').addEventListener('click', () => loadContent('ratings'));
-  document.getElementById('btn-thread').addEventListener('click', () => loadContent('public_thread'));
-
-  function initPhotoForm() {
-    const form = document.getElementById('photo-upload-form');
-    const input = document.getElementById('photos');
-    if (!form || !input) return;
-
-    input.addEventListener('change', () => {
-      if (input.files.length > 3) {
-        alert('You can only select up to 3 photos.');
-        input.value = '';
-      }
-    });
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const fd = new FormData(form);
-      console.log('🚀 Submitting', fd.getAll('photos[]').length, 'files');
-      fetch('photos.php', { method: 'POST', body: fd })
-        .then(r => r.text())
-        .then(html => {
-          dynamicContent.innerHTML = html;
-          initPhotoForm();   // re‑bind for the new form
-        })
-        .catch(err => {
-          console.error('Upload failed', err);
-          alert('Upload failed.');
-        });
-    });
-  }
+// Public thread form submission handler
+$(document).on("submit", "#public-thread-container form", function(e) {
+  e.preventDefault();
+  var form = $(this);
+  $.post("public_thread.php", form.serialize(), function(response) {
+    if (response.trim() === "success" || response.includes("<html")) {
+      $("#public-thread-container").load("public_thread.php");
+    } else {
+      alert("Failed to post. Make sure you're logged in.");
+    }
+  });
+});
 </script>
-
 
 </body>
 </html>
