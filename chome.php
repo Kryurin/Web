@@ -21,6 +21,10 @@ $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $res = $stmt->get_result();
 while ($row = $res->fetch_assoc()) {
+    // Make commission completion messages clearer
+    if (strpos($row['message'], 'commission completed') !== false) {
+        $row['message'] = '✅ Your commission has been marked as completed.';
+    }
     $notifications[] = $row;
 }
 $stmt->close();

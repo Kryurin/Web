@@ -10,15 +10,15 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'commissioner') {
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch this commissioner’s commissions
-// (Assumes your `commissions` table has a `status` column)
+// Fetch this commissioner's commissions
 $sql = "
     SELECT
       id,
       category,
       description,
       status,
-      created_at
+      created_at,
+      completed_file
     FROM commissions
     WHERE user_id = ?
     ORDER BY created_at DESC
@@ -31,6 +31,7 @@ $commissions = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,7 +72,7 @@ $conn->close();
 
   <?php if (empty($commissions)): ?>
     <div class="no-records">You haven’t posted any commissions yet.</div>
-  <?php else: ?>
+<?php else: ?>
     <table>
       <thead>
         <tr>
@@ -80,6 +81,7 @@ $conn->close();
           <th>Description</th>
           <th>Posted On</th>
           <th>Status</th>
+          <th>Completed File</th>
         </tr>
       </thead>
       <tbody>
@@ -91,18 +93,24 @@ $conn->close();
             <td><?php echo date("M j, Y g:i a", strtotime($c['created_at'])); ?></td>
             <td class="
               <?php 
-                // map status to CSS class
                 $s = strtolower($c['status']);
                 echo 'status-' . str_replace(' ', '', $s);
               ?>
             ">
               <?php echo htmlspecialchars(ucfirst($c['status'])); ?>
             </td>
+            <td>
+              <?php if ($c['status'] === 'Completed' && !empty($c['completed_file'])): ?>
+                <a href="uploads/completions/<?php echo htmlspecialchars($c['completed_file']); ?>" download>Download</a>
+              <?php else: ?>
+                N/A
+              <?php endif; ?>
+            </td>
           </tr>
         <?php endforeach; ?>
       </tbody>
     </table>
-  <?php endif; ?>
+<?php endif; ?>
 </div>
 
 </body>

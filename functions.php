@@ -1,9 +1,5 @@
 <?php
-// functions.php
 
-/**
- * Insert a notification for $userId.
- */
 function addNotification(mysqli $conn, int $userId, string $message): void {
     $stmt = $conn->prepare("
       INSERT INTO notifications (user_id, message)
