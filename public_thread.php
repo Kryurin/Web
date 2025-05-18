@@ -66,7 +66,7 @@ foreach ($threads as $msg) {
 <div style="padding:10px;">
   <h3>Public Thread</h3>
 
-  <form method="post">
+  <form method="post" id="thread-form">
     <input type="hidden" name="parent_id" value="0">
     <input type="hidden" name="view_id" value="<?php echo $view_id; ?>">
     <textarea name="content" placeholder="Post something…" required style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;"></textarea>

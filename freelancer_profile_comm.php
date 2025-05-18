@@ -125,39 +125,39 @@ $_SESSION['view_profile_id'] = $view_id;
       });
   }
 
-  // Delegate form submit on dynamically loaded content
-document.addEventListener('submit', function(e) {
-  if (e.target && e.target.matches('#dynamic-content form')) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
+  // Handle ONLY public thread form submission via AJAX
+  document.addEventListener('submit', function(e) {
+    if (e.target && e.target.id === 'thread-form') {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
 
-    fetch('public_thread.php', {
-      method: 'POST',
-      body: formData,
-      credentials: 'same-origin',
-    })
-    .then(res => res.text())
-    .then(text => {
-      if (text.trim() === 'success') {
-        // Reload thread content after successful post
-        fetch('public_thread.php?id=<?php echo $view_id; ?>', { credentials: 'same-origin' })
-          .then(res => res.text())
-          .then(html => {
-            document.getElementById('dynamic-content').innerHTML = html;
-          });
-      } else {
-        alert('Failed to post: ' + text);
-      }
-    })
-    .catch(err => {
-      alert('Error submitting post');
-      console.error(err);
-    });
-  }
-});
+      fetch('public_thread.php', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+      })
+      .then(res => res.text())
+      .then(text => {
+        if (text.trim() === 'success') {
+          // Reload thread content
+          fetch('public_thread.php?id=<?php echo $view_id; ?>', { credentials: 'same-origin' })
+            .then(res => res.text())
+            .then(html => {
+              dynamicContent.innerHTML = html;
+            });
+        } else {
+          alert('Failed to post: ' + text);
+        }
+      })
+      .catch(err => {
+        alert('Error submitting post');
+        console.error(err);
+      });
+    }
+  });
 
-
+  // Button events
   document.getElementById('btn-photos').addEventListener('click', () => loadContent('photos'));
   document.getElementById('btn-ratings').addEventListener('click', () => loadContent('ratings'));
   document.getElementById('btn-thread').addEventListener('click', () => loadContent('public_thread'));
