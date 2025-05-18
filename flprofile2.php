@@ -133,12 +133,11 @@ $(document).on("submit", "#public-thread-container form", function(e) {
   e.preventDefault();
   var form = $(this);
   $.post("public_thread.php", form.serialize(), function(response) {
-    if (response.trim() === "success" || response.includes("<html")) {
-      $("#public-thread-container").load("public_thread.php");
-    } else {
-      alert("Failed to post. Make sure you're logged in.");
-    }
-  });
+  $("#public-thread-container").html(response);
+}).fail(function() {
+  alert("Failed to submit the thread.");
+});
+
 });
 </script>
 

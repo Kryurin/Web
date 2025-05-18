@@ -110,36 +110,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <div class="container">
         <h2>Create Your Freelancer Profile</h2>
-        <form action="flprofile.php" method="POST" enctype="multipart/form-data">
+        <form action="flprofile.php" method="POST" enctype="multipart/form-data" >
             
             <div class="form-group">
                 <label for="profile_picture">Profile Picture:</label>
-                <input type="file" name="profile_picture" id="profile_picture" accept="image/*">
+                <input type="file" name="profile_picture" id="profile_picture" accept="image/*" required>
             </div>
 
             <div class="form-group">
                 <label for="First Name">First Name</label>
-                <input type="text" name="fname" id="fname">
+                <input type="text" name="fname" id="fname" required>
             </div>
 
             <div class="form-group">
                 <label for="lname">Last Name</label>
-                <input type="text" name="lname" id="lname">
+                <input type="text" name="lname" id="lname" required>
             </div>
 
             <div class="form-group">
                 <label for="bio">Bio:</label>
-                <textarea name="bio" id="bio" rows="4" placeholder="Tell us about yourself..."></textarea>
+                <textarea name="bio" id="bio" rows="4" placeholder="Tell us about yourself..." required></textarea>
             </div>
 
             <div class="form-group">
                 <label for="skills">Skills:</label>
-                <input type="text" name="skills" id="skills" placeholder="List your skills (comma separated)">
+                <input type="text" name="skills" id="skills" placeholder="List your skills (comma separated)" required>
             </div>
 
             <div class="form-group">
                 <label for="location">Location:</label>
-                <input type="text" name="location" id="location" placeholder="Your location (city, country)">
+                <input type="text" name="location" id="location" placeholder="Your location (city, country)" required>
             </div>
 
             <button type="submit">Create Profile</button>
