@@ -114,6 +114,7 @@ $conn->close();
         <a href="search.php">Search</a>
         <a href="my_commissions.php">My Commissions</a>
         <a href="flprofile2.php">Profile</a>
+        <a href="submit_report.php">Submit Report</a>
         <a href="logout.php">Logout</a>
     </div>
 </nav>

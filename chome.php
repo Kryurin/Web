@@ -174,6 +174,7 @@ $conn->close();
         <a href="chome.php">Home</a>
         <a href="search_freelancers.php">Search</a>
         <a href="mycommissions.php">Commissions</a>
+        <a href="submit_report.php">Submit Report</a>
         <a href="logout.php">Logout</a>
     </div>
 </nav>
