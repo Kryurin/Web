@@ -16,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cat_select = $_POST['category_select'] ?? '';
     $cat_custom = trim($_POST['category_custom'] ?? '');
     $description = trim($_POST['description'] ?? '');
+    $payment_amount = trim($_POST['payment_amount'] ?? '');
+    $payment_method = $_POST['payment_method'] ?? '';
+    $watermark = isset($_POST['watermark']) ? 1 : 0;
 
     // decide category
     if ($cat_select && $cat_select !== 'other') {
@@ -30,22 +33,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "Please enter a description.";
     }
 
+    if ($message === '' && !is_numeric($payment_amount)) {
+        $message = "Please enter a valid payment amount.";
+    }
+
+    if ($message === '' && $payment_method === '') {
+        $message = "Please select a payment method.";
+    }
+
     if ($message === '') {
         $stmt = $conn->prepare("
-            INSERT INTO commissions (user_id, category, description)
-            VALUES (?, ?, ?)
+            INSERT INTO commissions (user_id, category, description, payment_amount, payment_method, watermark)
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
-        $stmt->bind_param("iss", $user_id, $category, $description);
+        $stmt->bind_param("issdsi", $user_id, $category, $description, $payment_amount, $payment_method, $watermark);
         if ($stmt->execute()) {
             $message = "Commission posted successfully.";
-            // clear form fields
-            $cat_select = $cat_custom = $description = '';
+            $cat_select = $cat_custom = $description = $payment_amount = $payment_method = '';
+            $watermark = 0;
         } else {
             $message = "Error posting commission. Please try again.";
         }
         $stmt->close();
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -79,14 +91,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <form method="POST" action="">
     <label for="category_select">Category</label>
-    <select id="category_select" name="category_select">
-      <option value="">-- Select a category --</option>
-      <option value="Artwork"    <?php if (!empty($cat_select) && $cat_select==='Artwork') echo 'selected'; ?>>Artwork</option>
-      <option value="Writing"    <?php if (!empty($cat_select) && $cat_select==='Writing') echo 'selected'; ?>>Writing</option>
-      <option value="Design"     <?php if (!empty($cat_select) && $cat_select==='Design') echo 'selected'; ?>>Design</option>
-      <option value="Development"<?php if (!empty($cat_select) && $cat_select==='Development') echo 'selected'; ?>>Development</option>
-      <option value="other"      <?php if (isset($cat_select) && $cat_select==='other') echo 'selected'; ?>>Other</option>
+    <label for="main_category">Main Category</label>
+<select id="main_category" name="category_select" required>
+    <option value="">-- Select a main category --</option>
+    <option value="Artwork"      <?php if (!empty($cat_select) && $cat_select==='Artwork') echo 'selected'; ?>>Artwork</option>
+    <option value="Design"       <?php if (!empty($cat_select) && $cat_select==='Design') echo 'selected'; ?>>Design</option>
+    <option value="Development"  <?php if (!empty($cat_select) && $cat_select==='Development') echo 'selected'; ?>>Development</option>
+    <option value="other"        <?php if (!empty($cat_select) && $cat_select==='other') echo 'selected'; ?>>Other</option>
+  </select>
+
+  <div id="subcategory-wrapper" style="display:none;">
+    <label for="subcategory">Subcategory</label>
+    <select id="subcategory" name="subcategory_select">
+      <option value="">-- Select a subcategory --</option>
     </select>
+  </div>
+
+  <div id="custom-cat" style="display:none;">
+    <label for="category_custom">Specify Category</label>
+    <input
+      type="text"
+      id="category_custom"
+      name="category_custom"
+      placeholder="Enter custom category"
+      value="<?php echo htmlspecialchars($cat_custom ?? ''); ?>"
+    >
+  </div>
+
 
     <div id="custom-cat">
       <label for="category_custom">Specify Category</label>
@@ -108,26 +139,100 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       required
     ><?php echo htmlspecialchars($description ?? ''); ?></textarea>
 
+    <label for="payment_amount">Payment Amount (₱)</label>
+<input
+  type="text"
+  id="payment_amount"
+  name="payment_amount"
+  value="<?php echo htmlspecialchars($payment_amount ?? ''); ?>"
+  required
+>
+
+<label for="payment_method">Preferred Payment Method</label>
+  <select id="payment_method" name="payment_method" required>
+    <option value="">-- Select a method --</option>
+    <option value="PayPal"        <?php if (!empty($payment_method) && $payment_method==='PayPal') echo 'selected'; ?>>PayPal</option>
+    <option value="Bank Transfer" <?php if (!empty($payment_method) && $payment_method==='Bank Transfer') echo 'selected'; ?>>Bank Transfer</option>
+    <option value="Venmo"         <?php if (!empty($payment_method) && $payment_method==='Venmo') echo 'selected'; ?>>Venmo</option>
+    <option value="Other"         <?php if (!empty($payment_method) && $payment_method==='Other') echo 'selected'; ?>>Other</option>
+  </select>
+
+  <label>
+    <input
+      type="checkbox"
+      name="watermark"
+      <?php if (!empty($watermark)) echo 'checked'; ?>
+    >
+    Add watermark to delivered work
+  </label>
+
+
     <button type="submit" class="btn">Post Commission</button>
   </form>
+  
 </div>
 
 <script>
-// Show/hide custom category field
-document.getElementById('category_select').addEventListener('change', function() {
-  var custom = document.getElementById('custom-cat');
-  if (this.value === 'other') {
-    custom.style.display = 'block';
+const subcategories = {
+  Artwork: [
+    "Digital Artwork", "Sketch", "Comic", "Self Portrait", "Illustration",
+    "Sculpture", "Abstract", "Fan Art", "Oil Painting", "Photorealism"
+  ],
+  Design: [
+    "UI Web Designing", "Logo Designing", "T-Shirt Merchandise Designing", "Animation",
+    "Infographic", "Poster Design", "Album/Book Cover Design",
+    "Graphic Designing", "Business Identity Designing", "Icon Design"
+  ],
+  Development: [
+    "Debugging", "Front-End Web/App Development", "Back-End Web/App Development",
+    "Full-Stack Web/App Development", "2D Game Development", "3D Game Development",
+    "Database Development", "Mobile App Development", "Cloud Computing", "Api Developement"
+  ]
+};
+
+const mainCategory = document.getElementById('main_category');
+const subCategory = document.getElementById('subcategory');
+const subCategoryWrapper = document.getElementById('subcategory-wrapper');
+const customCat = document.getElementById('custom-cat');
+
+function populateSubcategories(category) {
+  subCategory.innerHTML = '<option value="">-- Select a subcategory --</option>';
+  if (subcategories[category]) {
+    subcategories[category].forEach(sub => {
+      const option = document.createElement('option');
+      option.value = sub;
+      option.textContent = sub;
+      subCategory.appendChild(option);
+    });
+    subCategoryWrapper.style.display = 'block';
   } else {
-    custom.style.display = 'none';
-    document.getElementById('category_custom').value = '';
+    subCategoryWrapper.style.display = 'none';
+  }
+}
+
+mainCategory.addEventListener('change', function () {
+  const selected = this.value;
+  if (selected === 'other') {
+    customCat.style.display = 'block';
+    subCategoryWrapper.style.display = 'none';
+  } else {
+    customCat.style.display = 'none';
+    populateSubcategories(selected);
   }
 });
-// on page load, if “other” was selected, display the field
-if (document.getElementById('category_select').value === 'other') {
-  document.getElementById('custom-cat').style.display = 'block';
-}
+
+// On page load, repopulate subcategories if Artwork/Design/Development was already selected
+window.addEventListener('DOMContentLoaded', () => {
+  const selected = mainCategory.value;
+  if (subcategories[selected]) {
+    populateSubcategories(selected);
+  }
+  if (selected === 'other') {
+    customCat.style.display = 'block';
+  }
+});
 </script>
+
 
 </body>
 </html>

@@ -55,17 +55,27 @@ $conn->close();
   <div class="section"><strong>Bio:</strong>
     <p><?php echo nl2br(htmlspecialchars($profile['bio'])); ?></p>
   </div>
+
   <div class="section"><strong>Skills:</strong>
     <p><?php echo htmlspecialchars($profile['skills']); ?></p>
   </div>
+
   <div class="section"><strong>Location:</strong>
     <p><?php echo htmlspecialchars($profile['location']); ?></p>
+  </div>
+
+  <div class="section"><strong>Payment Details:</strong>
+  <p><strong>Method:</strong> <?php echo htmlspecialchars($profile['payment_method']); ?></p>
+  <p><strong>Number/Email:</strong> <?php echo htmlspecialchars($profile['payment_number']); ?></p>
   </div>
 
   <div class="buttons">
     <button id="btn-photos">Photos</button>
     <button id="btn-ratings">Ratings</button>
     <button id="btn-thread">Public Thread</button>
+    <a href="flprofile.php" style="text-decoration:none;">
+      <button type="button">Edit Profile</button>
+    </a>
   </div>
 
   <div id="dynamic-content"></div>

@@ -12,18 +12,19 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'commissioner') {
 function searchFreelancers(mysqli $conn, string $term): array {
   $like = '%' . $term . '%';
   $sql = "
-      SELECT 
-        u.id,
-        u.username,
-        p.profile_picture,
-        p.skills,
-        p.location
-      FROM users AS u
-      JOIN freelancer_profiles AS p ON u.id = p.user_id
-      WHERE u.status = 'active'   -- Only active freelancers
-        AND (u.username LIKE ? OR p.skills LIKE ? OR p.location LIKE ?)
-      ORDER BY u.username ASC
-  ";
+    SELECT 
+      u.id,
+      u.username,
+      p.profile_picture,
+      p.skills,
+      p.location,
+      p.payment_method
+    FROM users AS u
+    JOIN freelancer_profiles AS p ON u.id = p.user_id
+    WHERE u.status = 'active'
+      AND (u.username LIKE ? OR p.skills LIKE ? OR p.location LIKE ?)
+    ORDER BY u.username ASC
+";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("sss", $like, $like, $like);
   $stmt->execute();
@@ -100,8 +101,9 @@ $conn->close();
             
           </a>
           <div style="font-size:14px; color:#666;">
-            Skills: <?php echo htmlspecialchars($f['skills']); ?><br>
-            Location: <?php echo htmlspecialchars($f['location']); ?>
+              Skills: <?php echo htmlspecialchars($f['skills']); ?><br>
+              Location: <?php echo htmlspecialchars($f['location']); ?><br>
+              Preferred Payment: <?php echo htmlspecialchars($f['payment_method']); ?>
           </div>
         </div>
       </div>

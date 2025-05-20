@@ -21,11 +21,14 @@ $stmt = $conn->prepare("
       p.profile_picture,
       p.bio,
       p.skills,
-      p.location
+      p.location,
+      p.payment_number,
+      p.payment_method
     FROM users AS u
     JOIN freelancer_profiles AS p ON u.id = p.user_id
     WHERE u.id = ?
 ");
+
 $stmt->bind_param("i", $view_id);
 $stmt->execute();
 $profile = $stmt->get_result()->fetch_assoc();
@@ -85,6 +88,14 @@ $_SESSION['view_profile_id'] = $view_id;
   <div class="section"><strong>Location:</strong>
     <p><?php echo htmlspecialchars($profile['location']); ?></p>
   </div>
+    <div class="section"><strong>Preferred Payment Method:</strong>
+    <p><?php echo htmlspecialchars($profile['payment_method']); ?></p>
+  </div>
+
+  <div class="section"><strong>Payment Number</strong>
+    <p><?php echo htmlspecialchars($profile['payment_number']); ?></p>
+  </div>
+
 
   <div class="buttons">
     <button id="btn-photos">Photos</button>
