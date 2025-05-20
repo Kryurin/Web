@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <option value="">-- Select a main category --</option>
     <option value="Artwork"      <?php if (!empty($cat_select) && $cat_select==='Artwork') echo 'selected'; ?>>Artwork</option>
     <option value="Design"       <?php if (!empty($cat_select) && $cat_select==='Design') echo 'selected'; ?>>Design</option>
-    <option value="Development"  <?php if (!empty($cat_select) && $cat_select==='Development') echo 'selected'; ?>>Development</option>
+    <option value="TDCreation"  <?php if (!empty($cat_select) && $cat_select==='TCreation') echo 'selected'; ?>>3D Creation</option>
     <option value="other"        <?php if (!empty($cat_select) && $cat_select==='other') echo 'selected'; ?>>Other</option>
   </select>
 
@@ -176,17 +176,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 const subcategories = {
   Artwork: [
     "Digital Artwork", "Sketch", "Comic", "Self Portrait", "Illustration",
-    "Sculpture", "Abstract", "Fan Art", "Oil Painting", "Photorealism"
+    "Sculpture", "Abstract", "Fan Art", "Oil Painting", "Photo Manipulation", "Other- Specify in Description"
   ],
   Design: [
     "UI Web Designing", "Logo Designing", "T-Shirt Merchandise Designing", "Animation",
     "Infographic", "Poster Design", "Album/Book Cover Design",
-    "Graphic Designing", "Business Identity Designing", "Icon Design"
+    "Graphic Designing", "Business Identity Designing", "Icon Design", "Other- Specify in Description"
   ],
-  Development: [
-    "Debugging", "Front-End Web/App Development", "Back-End Web/App Development",
-    "Full-Stack Web/App Development", "2D Game Development", "3D Game Development",
-    "Database Development", "Mobile App Development", "Cloud Computing", "Api Developement"
+  TDCreation: [
+    "Character Design", "Icons", "Models", "3D Logo", "Other- Specify in Description"
   ]
 };
 

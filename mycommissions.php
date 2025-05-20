@@ -2,7 +2,6 @@
 session_start();
 require 'db.php';
 
-// Only commissioners may access
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'commissioner') {
     header("Location: index.php");
     exit;
@@ -10,7 +9,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'commissioner') {
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch this commissioner's commissions
 $sql = "
     SELECT
       id,
@@ -18,7 +16,8 @@ $sql = "
       description,
       status,
       created_at,
-      completed_file
+      completed_file,
+      temp_file
     FROM commissions
     WHERE user_id = ?
     ORDER BY created_at DESC
@@ -45,14 +44,17 @@ $conn->close();
     nav .right a:hover { text-decoration:underline; }
 
     .container { max-width: 900px; margin: 30px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    h2 { margin-top: 0; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
     th { background: #f0f0f0; }
-    .status-pending   { color: #e67e22; font-weight: bold; }
-    .status-inprogress{ color: #2980b9; font-weight: bold; }
-    .status-completed { color: #27ae60; font-weight: bold; }
-    .no-records { padding: 20px; text-align: center; color: #666; }
+    .btn-confirm, .btn-reject {
+      border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;
+    }
+    .btn-confirm { background: #28a745; color: white; }
+    .btn-confirm:hover { background: #218838; }
+    .btn-reject { background: #dc3545; color: white; margin-left: 5px; }
+    .btn-reject:hover { background: #c82333; }
+    form.inline { display: inline-block; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -71,8 +73,8 @@ $conn->close();
   <h2>My Posted Commissions</h2>
 
   <?php if (empty($commissions)): ?>
-    <div class="no-records">You haven’t posted any commissions yet.</div>
-<?php else: ?>
+    <p>You haven’t posted any commissions yet.</p>
+  <?php else: ?>
     <table>
       <thead>
         <tr>
@@ -81,27 +83,30 @@ $conn->close();
           <th>Description</th>
           <th>Posted On</th>
           <th>Status</th>
-          <th>Completed File</th>
+          <th>Files</th>
         </tr>
       </thead>
       <tbody>
         <?php foreach ($commissions as $c): ?>
           <tr>
-            <td><?php echo htmlspecialchars($c['id']); ?></td>
+            <td><?php echo $c['id']; ?></td>
             <td><?php echo htmlspecialchars($c['category']); ?></td>
             <td><?php echo nl2br(htmlspecialchars($c['description'])); ?></td>
             <td><?php echo date("M j, Y g:i a", strtotime($c['created_at'])); ?></td>
-            <td class="
-              <?php 
-                $s = strtolower($c['status']);
-                echo 'status-' . str_replace(' ', '', $s);
-              ?>
-            ">
-              <?php echo htmlspecialchars(ucfirst($c['status'])); ?>
-            </td>
+            <td><?php echo htmlspecialchars($c['status']); ?></td>
             <td>
-              <?php if ($c['status'] === 'Completed' && !empty($c['completed_file'])): ?>
-                <a href="uploads/completions/<?php echo htmlspecialchars($c['completed_file']); ?>" download>Download</a>
+              <?php if ($c['status'] === 'Under Review' && !empty($c['temp_file'])): ?>
+                <a href="uploads/completions/<?php echo htmlspecialchars($c['temp_file']); ?>" target="_blank">View Temp</a>
+                <form method="POST" action="confirm_completion.php" class="inline">
+                  <input type="hidden" name="commission_id" value="<?php echo $c['id']; ?>">
+                  <button type="submit" class="btn-confirm">Confirm</button>
+                </form>
+                <form method="POST" action="reject_temp.php" class="inline">
+                  <input type="hidden" name="commission_id" value="<?php echo $c['id']; ?>">
+                  <button type="submit" class="btn-reject">Not Approve</button>
+                </form>
+              <?php elseif ($c['status'] === 'Completed' && !empty($c['completed_file'])): ?>
+                <a href="uploads/completions/<?php echo htmlspecialchars($c['completed_file']); ?>" download>Download Final</a>
               <?php else: ?>
                 N/A
               <?php endif; ?>
@@ -110,8 +115,7 @@ $conn->close();
         <?php endforeach; ?>
       </tbody>
     </table>
-<?php endif; ?>
+  <?php endif; ?>
 </div>
-
 </body>
 </html>
