@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <textarea name="message" rows="5" required></textarea><br><br>
 
     <label>Upload Image (optional):</label><br>
-    <input type="file" name="image" accept="image/*"><br><br>
+    <input type="file" name="image" accept="image/*" required><br><br>
 
     <button type="submit">Submit Report</button>
 </form>

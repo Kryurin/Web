@@ -12,6 +12,10 @@ elseif (isset($_SESSION['user_id']) || $_SESSION['role'] == 'commissioner') {
     header("Location: chome.php");
     exit();
 }
+elseif (isset($_SESSION['user_id']) || $_SESSION['role'] == 'admin') {
+    header("Location: admindash.php");
+    exit();
+}
 }
 ?>
 
